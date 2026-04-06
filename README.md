@@ -15,6 +15,8 @@ Authenticate once with a Personal Access Token and interact with repositories, i
 | `/list-issues/{owner}/{repo}` | GET | List issues in a repo |
 | `/create-issue/{owner}/{repo}` | POST | Create a new issue |
 | `/commits/{owner}/{repo}` | GET | Fetch recent commits |
+| `/create-pr/{owner}/{repo}` | POST | **[Bonus]** Create a pull request |
+
 
 ---
 
@@ -132,18 +134,19 @@ curl -X POST http://localhost:8000/create-pr/your-username/your-repo \
 ```
 github-connector/
 ├── app/
-│   ├── main.py           # FastAPI app + router registration
-│   ├── config.py         # Pydantic settings (reads .env)
+│   ├── main.py                 # FastAPI app + router registration
+│   ├── config.py               # Pydantic settings (reads .env)
 │   ├── models/
-│   │   └── schemas.py    # Request/response Pydantic models
+│   │   └── schemas.py          # Request/response Pydantic models
 │   ├── routers/
-│   │   ├── repos.py      # /repos endpoints
-│   │   ├── issues.py     # /list-issues, /create-issue endpoints
-│   │   └── commits.py    # /commits endpoints
+│   │   ├── repos.py            # /repos endpoints
+│   │   ├── issues.py           # /list-issues, /create-issue endpoints
+│   │   └── commits.py          # /commits endpoints
+│   │   └── pull_requests.py    # /create-pr endpoints
 │   └── services/
-│       └── github.py     # All GitHub API calls + error handling
+│       └── github.py           # All GitHub API calls + error handling
 ├── tests/
-│   └── test_connector.py # Full test suite (25 tests)
+│   └── test_connector.py       # Full test suite (25 tests)
 ├── .env
 ├── .env.example
 ├── Dockerfile
