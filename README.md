@@ -94,6 +94,39 @@ GITHUB_PAT=test_token pytest --cov=app --cov-report=term-missing
 
 ---
 
+## Example Requests
+ 
+### List repositories
+```bash
+curl http://localhost:8000/repos/torvalds
+```
+ 
+### List issues
+```bash
+curl "http://localhost:8000/list-issues/facebook/react?state=open"
+```
+ 
+### Create an issue
+```bash
+curl -X POST http://localhost:8000/create-issue/your-username/your-repo \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Found a bug", "body": "Steps to reproduce...", "labels": ["bug"]}'
+```
+ 
+### Fetch commits
+```bash
+curl "http://localhost:8000/commits/your-username/your-repo?branch=main"
+```
+ 
+### Create a pull request
+```bash
+curl -X POST http://localhost:8000/create-pr/your-username/your-repo \
+  -H "Content-Type: application/json" \
+  -d '{"title": "feat: add login", "head": "feature/login", "base": "main", "body": "Closes #5", "draft": false}'
+```
+ 
+---
+
 ## Project Structure
 
 ```
