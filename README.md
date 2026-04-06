@@ -31,7 +31,8 @@ cd github-connector
 
 ```bash
 python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+source venv/bin/activate      # Windows
+source venv\Scripts\activate  # Liux/Git bash
 ```
 
 ### 3. Install dependencies
