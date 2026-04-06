@@ -1,0 +1,12 @@
+# virtualenv
+venv/
+__pycache__/
+*.pyc
+
+# env files
+.env
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
