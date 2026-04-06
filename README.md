@@ -24,7 +24,7 @@ Authenticate once with a Personal Access Token and interact with repositories, i
 ### 1. Clone & enter the project
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/SagarDNG/github-connector
 cd github-connector
 ```
 
