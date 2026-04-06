@@ -17,7 +17,6 @@ Authenticate once with a Personal Access Token and interact with repositories, i
 | `/commits/{owner}/{repo}` | GET | Fetch recent commits |
 | `/create-pr/{owner}/{repo}` | POST | **[Bonus]** Create a pull request |
 
-
 ---
 
 ## Setup
@@ -44,19 +43,19 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure your GitHub PAT
- 
+
 Copy the example env file and add your token:
- 
+
 ```bash
 cp .env.example .env
 ```
- 
+
 Edit `.env`:
- 
+
 ```
 GITHUB_PAT=ghp_your_actual_token_here
 ```
- 
+
 > **Required scopes:** `repo` (or `public_repo` for public repos only)  
 > Generate at: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
 
@@ -97,36 +96,36 @@ GITHUB_PAT=test_token pytest --cov=app --cov-report=term-missing
 ---
 
 ## Example Requests
- 
+
 ### List repositories
 ```bash
 curl http://localhost:8000/repos/torvalds
 ```
- 
+
 ### List issues
 ```bash
 curl "http://localhost:8000/list-issues/facebook/react?state=open"
 ```
- 
+
 ### Create an issue
 ```bash
 curl -X POST http://localhost:8000/create-issue/your-username/your-repo \
   -H "Content-Type: application/json" \
   -d '{"title": "Found a bug", "body": "Steps to reproduce...", "labels": ["bug"]}'
 ```
- 
+
 ### Fetch commits
 ```bash
 curl "http://localhost:8000/commits/your-username/your-repo?branch=main"
 ```
- 
+
 ### Create a pull request
 ```bash
 curl -X POST http://localhost:8000/create-pr/your-username/your-repo \
   -H "Content-Type: application/json" \
   -d '{"title": "feat: add login", "head": "feature/login", "base": "main", "body": "Closes #5", "draft": false}'
 ```
- 
+
 ---
 
 ## Project Structure
@@ -147,6 +146,7 @@ github-connector/
 │       └── github.py           # All GitHub API calls + error handling
 ├── tests/
 │   └── test_connector.py       # Full test suite (25 tests)
+├── .gitignore
 ├── .env
 ├── .env.example
 ├── Dockerfile
