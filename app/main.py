@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import repos, issues, commits
+from app.routers import repos, issues, commits, pull_requests
 
 app = FastAPI(
     title="GitHub Cloud Connector",
@@ -18,6 +18,7 @@ app.add_middleware(
 app.include_router(repos.router, prefix="/repos", tags=["Repositories"])
 app.include_router(issues.router, tags=["Issues"])
 app.include_router(commits.router, tags=["Commits"])
+app.include_router(pull_requests.router, tags=["Pull Requests"])
 
 
 @app.get("/health", tags=["Health"])
