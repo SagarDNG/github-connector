@@ -98,7 +98,41 @@ def create_issue(owner: str, repo: str, title: str, body: str = "", labels: list
     }
 
 
-# ── Commits ───────────────────────────────────────────────────────────────────
+# ── Pull Requests ─────────────────────────────────────────────────────────────
+
+def create_pull_request(
+    owner: str,
+    repo: str,
+    title: str,
+    head: str,
+    base: str,
+    body: str = "",
+    draft: bool = False,
+) -> dict:
+    url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls"
+    payload = {
+        "title": title,
+        "head": head,
+        "base": base,
+        "body": body,
+        "draft": draft,
+    }
+    with httpx.Client() as client:
+        response = client.post(url, headers=_headers(), json=payload)
+    _raise_for_status(response, f"Could not create PR in '{owner}/{repo}'. Ensure head branch exists and differs from base.")
+    pr = response.json()
+    return {
+        "number": pr["number"],
+        "title": pr["title"],
+        "state": pr["state"],
+        "draft": pr.get("draft", False),
+        "html_url": pr["html_url"],
+        "head": pr["head"]["ref"],
+        "base": pr["base"]["ref"],
+        "created_at": pr["created_at"],
+        "user": pr["user"]["login"],
+    }
+
 
 def fetch_commits(owner: str, repo: str, branch: str = "main", per_page: int = 20) -> list[dict]:
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
