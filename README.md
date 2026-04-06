@@ -145,7 +145,7 @@ github-connector/
 │   └── services/
 │       └── github.py           # All GitHub API calls + error handling
 ├── tests/
-│   └── test_connector.py       # Full test suite (25 tests)
+│   └── test_connector.py       # Full test suite (33 tests)
 ├── .gitignore
 ├── .env
 ├── .env.example
