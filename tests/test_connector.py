@@ -319,3 +319,164 @@ class TestCommits:
 
         assert response.status_code == 200
         assert response.json() == []
+
+
+# ─────────────────────────────────────────────
+# POST /create-pr/{owner}/{repo}
+# ─────────────────────────────────────────────
+
+@pytest.fixture
+def mock_pr():
+    return {
+        "number": 42,
+        "title": "feat: add login flow",
+        "state": "open",
+        "draft": False,
+        "html_url": "https://github.com/octocat/cool-project/pull/42",
+        "head": {"ref": "feature/login"},
+        "base": {"ref": "main"},
+        "created_at": "2024-01-01T00:00:00Z",
+        "user": {"login": "octocat"},
+    }
+
+
+class TestCreatePullRequest:
+    def test_create_pr_success(self, mock_pr):
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value.__enter__.return_value.post.return_value = (
+                _mock_response(mock_pr, 201)
+            )
+            response = client.post(
+                "/create-pr/octocat/cool-project",
+                json={
+                    "title": "feat: add login flow",
+                    "head": "feature/login",
+                    "base": "main",
+                    "body": "Implements the login flow described in #10",
+                },
+            )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["number"] == 42
+        assert data["title"] == "feat: add login flow"
+        assert data["head"] == "feature/login"
+        assert data["base"] == "main"
+        assert data["state"] == "open"
+        assert data["draft"] is False
+        assert data["user"] == "octocat"
+
+    def test_create_draft_pr(self, mock_pr):
+        draft_pr = {**mock_pr, "draft": True}
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_post = mock_client_cls.return_value.__enter__.return_value.post
+            mock_post.return_value = _mock_response(draft_pr, 201)
+            response = client.post(
+                "/create-pr/octocat/cool-project",
+                json={
+                    "title": "WIP: draft PR",
+                    "head": "feature/wip",
+                    "base": "main",
+                    "draft": True,
+                },
+            )
+            _, kwargs = mock_post.call_args
+            assert kwargs["json"]["draft"] is True
+
+        assert response.status_code == 201
+        assert response.json()["draft"] is True
+
+    def test_create_pr_sends_correct_payload(self, mock_pr):
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_post = mock_client_cls.return_value.__enter__.return_value.post
+            mock_post.return_value = _mock_response(mock_pr, 201)
+            client.post(
+                "/create-pr/octocat/cool-project",
+                json={
+                    "title": "feat: add login flow",
+                    "head": "feature/login",
+                    "base": "main",
+                    "body": "My PR description",
+                },
+            )
+            _, kwargs = mock_post.call_args
+            payload = kwargs["json"]
+            assert payload["title"] == "feat: add login flow"
+            assert payload["head"] == "feature/login"
+            assert payload["base"] == "main"
+            assert payload["body"] == "My PR description"
+
+    def test_create_pr_missing_title(self):
+        response = client.post(
+            "/create-pr/octocat/cool-project",
+            json={"head": "feature/login", "base": "main"},
+        )
+        assert response.status_code == 422
+
+    def test_create_pr_missing_head(self):
+        response = client.post(
+            "/create-pr/octocat/cool-project",
+            json={"title": "My PR", "base": "main"},
+        )
+        assert response.status_code == 422
+
+    def test_create_pr_missing_base(self):
+        response = client.post(
+            "/create-pr/octocat/cool-project",
+            json={"title": "My PR", "head": "feature/login"},
+        )
+        assert response.status_code == 422
+
+    def test_create_pr_empty_title(self):
+        response = client.post(
+            "/create-pr/octocat/cool-project",
+            json={"title": "", "head": "feature/login", "base": "main"},
+        )
+        assert response.status_code == 422
+
+    def test_create_pr_repo_not_found(self):
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value.__enter__.return_value.post.return_value = (
+                _mock_response({}, 404)
+            )
+            response = client.post(
+                "/create-pr/octocat/missing-repo",
+                json={"title": "PR", "head": "feature/x", "base": "main"},
+            )
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+    def test_create_pr_unprocessable_same_branch(self):
+        """GitHub returns 422 when head == base."""
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value.__enter__.return_value.post.return_value = (
+                _mock_response({"message": "Validation Failed"}, 422)
+            )
+            response = client.post(
+                "/create-pr/octocat/cool-project",
+                json={"title": "Bad PR", "head": "main", "base": "main"},
+            )
+        assert response.status_code == 422
+
+    def test_create_pr_unauthorized(self):
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value.__enter__.return_value.post.return_value = (
+                _mock_response({}, 401)
+            )
+            response = client.post(
+                "/create-pr/octocat/cool-project",
+                json={"title": "PR", "head": "feature/x", "base": "main"},
+            )
+        assert response.status_code == 401
+        assert "authentication failed" in response.json()["detail"].lower()
+
+    def test_create_pr_forbidden(self):
+        with patch("app.services.github.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value.__enter__.return_value.post.return_value = (
+                _mock_response({}, 403)
+            )
+            response = client.post(
+                "/create-pr/octocat/cool-project",
+                json={"title": "PR", "head": "feature/x", "base": "main"},
+            )
+        assert response.status_code == 403
