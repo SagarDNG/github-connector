@@ -35,3 +35,23 @@ class CommitResponse(BaseModel):
     author: str
     date: str
     html_url: str
+
+
+class CreatePullRequestRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=256, description="PR title")
+    head: str = Field(..., description="The branch containing changes (e.g. 'feature/my-branch')")
+    base: str = Field(..., description="The branch you want to merge into (e.g. 'main')")
+    body: str = Field("", description="PR description / body")
+    draft: bool = Field(False, description="Open as a draft PR")
+
+
+class PullRequestResponse(BaseModel):
+    number: int
+    title: str
+    state: str
+    draft: bool
+    html_url: str
+    head: str
+    base: str
+    created_at: str
+    user: str
